@@ -146,21 +146,3 @@ app.delete('/biodata/:id', validateParams(idSchema), async(req, res) => {
     }
     return successResponse(res, 'Data berhasil dihapus', result.rows[0])
 })
-
-// if route tidak ditemukan
-app.use((req, res) => {
-    return errorResponse(res, 'Endpoint tidak ditemukan', 404)
-})
-
-// global error handler
-app.use((err, req, res, next) => {
-    console.error(err)
-    if(res.headersSent){
-        return next(err)
-    }
-    return errorResponse(res, "Terjadi Kesalahan pada Server", 500)
-})
-
-app.listen(port, () => {
-    console.log(`App running on port ${port}.`)
-})
