@@ -19,14 +19,17 @@ app.use(express.json())
 app.use(express.urlencoded({extended: true}))
 
 // Middleware Logging
-app.user((req, res, next) =>{
-    const start = Date.now() - start
-    console.log({
-        method: req.method,
-        url: req.originalUrl,
-        statusCode: req.StatusCode,
-        duration: "${duration} ms"
+app.use((req, res, next) => {
+    const start = Date.now()
+    res.on('finish', () => {
+        console.log({
+            method: req.method,
+            url: req.originalUrl,
+            statusCode: res.statusCode,
+            duration: `${Date.now() - start} ms`
+        })
     })
+    next()
 })
 
 // Response Envelope
@@ -44,9 +47,10 @@ function errorResponse(res, message, status, details = null){
 
 // Joi Validation Schema
 const biodataSchema = Joi.object({
-    id: Joi.number().integer().positive(),
+    id: Joi.number().integer().positive().required(),
     nama: Joi.string().trim().min(2).max(100).required(),
     nim: Joi.string().trim().min(5).max(20).required(),
+    kelas: Joi.string().trim().min(1).max(20).required(),
 })
 
 const idSchema = Joi.object({
@@ -74,9 +78,9 @@ function validateBody(schema){
     }
 }
 
-function validateParam(schema){
+function validateParams(schema){
     return(req, res, next) => {
-        const { error, value } = schema.validate(req.param,{
+        const { error, value } = schema.validate(req.params,{
             abortEarly:false, convert: true, allowUnknown: false
         });
         if(error){
@@ -90,7 +94,7 @@ function validateParam(schema){
                 }))
             )
         }
-        req.param = value,
+        req.params = value,
         next()
     }
 }
@@ -112,8 +116,8 @@ app.post('/biodata', validateBody(biodataSchema), async(req,res)=>{
 })
 
 app.put(
-    "biodata/:id",
-    validateParams(idSchema),
+    "/biodata/:id",
+    validateParams(idSchema),   
     validateBody(
         biodataSchema
             .fork(["nama", "nim", "kelas"], (field) => field.required())
