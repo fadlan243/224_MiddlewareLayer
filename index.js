@@ -73,3 +73,24 @@ function validateBody(schema){
         next()
     }
 }
+
+function validateParam(schema){
+    return(req, res, next) => {
+        const { error, value } = schema.validate(req.param,{
+            abortEarly:false, convert: true, allowUnknown: false
+        });
+        if(error){
+            return errorResponse(
+                res,
+                'parameter tidak valid',
+                400,
+                error.details.map(item => ({
+                    field: item.path.join('.'),
+                    message: item.message,
+                }))
+            )
+        }
+        req.param = value,
+        next()
+    }
+}
