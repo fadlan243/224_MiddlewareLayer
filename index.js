@@ -17,3 +17,15 @@ const pool = new Pool({
 
 app.use(express.json())
 app.use(express.urlencoded({extended: true}))
+
+// Middleware Logging
+app.user((req, res, next) =>{
+    const start = Date.now() - start
+    console.log({
+        method: req.method,
+        url: req.originalUrl,
+        statusCode: req.StatusCode,
+        duration: "${duration} ms"
+    })
+})
+
